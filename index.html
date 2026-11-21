@@ -1,0 +1,1174 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#121c18">
+<title>Гетьман Сагайдачний · Козацький платформер</title>
+<style>
+:root {
+  --bg: #0c1411;
+  --panel: rgba(20, 35, 29, 0.92);
+  --gold: #e8be5a;
+  --gold-bright: #fae08c;
+  --crimson: #b83838;
+  --text: #f5efe0;
+  --muted: #c2b89f;
+}
+* {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: var(--bg);
+  color: var(--text);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  touch-action: none;
+}
+.app {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 8px 10px 10px;
+  gap: 8px;
+}
+.topbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  background: var(--panel);
+  border: 1.5px solid rgba(232, 190, 90, 0.55);
+  border-radius: 14px;
+  padding: 8px 12px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.45);
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 800;
+  font-size: 15px;
+  color: var(--gold-bright);
+  letter-spacing: 0.2px;
+}
+.stats {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 700;
+}
+.chip {
+  background: rgba(11, 20, 16, 0.85);
+  border: 1px solid rgba(232, 190, 90, 0.35);
+  border-radius: 999px;
+  padding: 4px 10px;
+  color: var(--text);
+}
+.chip span { color: var(--gold-bright); }
+.lvl-btn {
+  border: 1px solid var(--gold);
+  border-radius: 999px;
+  background: linear-gradient(180deg, #6e2222, #471414);
+  color: var(--text);
+  font-size: 12px;
+  font-weight: 700;
+  padding: 5px 11px;
+  cursor: pointer;
+}
+.lvl-btn.active {
+  background: linear-gradient(180deg, #f2cb68, #c89428);
+  color: #161d18;
+}
+.stage-wrap {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 220px;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 2px solid var(--gold);
+  box-shadow: 0 10px 28px rgba(0,0,0,0.6);
+  background: #13221c;
+}
+canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.overlay {
+  position: absolute;
+  inset: 0;
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 18px;
+  text-align: center;
+  background: rgba(10, 18, 14, 0.82);
+  backdrop-filter: blur(3px);
+  z-index: 4;
+}
+.overlay.show { display: flex; }
+.overlay-card {
+  max-width: 440px;
+  width: 100%;
+  background: rgba(22, 39, 32, 0.96);
+  border: 2px solid var(--gold);
+  border-radius: 18px;
+  padding: 18px;
+  box-shadow: 0 12px 32px rgba(0,0,0,0.65);
+}
+.overlay-card h2 {
+  margin: 0 0 8px;
+  color: var(--gold-bright);
+  font-size: 20px;
+}
+.overlay-card p {
+  margin: 0 0 14px;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.45;
+}
+.action-btn {
+  display: inline-block;
+  width: 100%;
+  border: 1px solid var(--gold-bright);
+  border-radius: 12px;
+  padding: 12px 16px;
+  background: linear-gradient(180deg, #f2cb68, #c89428);
+  color: #161d18;
+  font-size: 16px;
+  font-weight: 800;
+  cursor: pointer;
+}
+.controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex: 0 0 auto;
+}
+.pad-group {
+  display: flex;
+  gap: 8px;
+}
+.ctrl-btn {
+  min-width: 58px;
+  height: 54px;
+  padding: 0 14px;
+  border-radius: 14px;
+  border: 1.5px solid rgba(232, 190, 90, 0.65);
+  background: linear-gradient(180deg, rgba(31, 54, 44, 0.95), rgba(16, 29, 24, 0.98));
+  color: var(--gold-bright);
+  font-size: 18px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+}
+.ctrl-btn:active, .ctrl-btn.pressed {
+  transform: translateY(2px);
+  background: linear-gradient(180deg, #f2cb68, #c89428);
+  color: #151d18;
+}
+.ctrl-btn.saber {
+  background: linear-gradient(180deg, #8b2626, #571515);
+  border-color: #f0b675;
+  color: #fff3d1;
+  min-width: 84px;
+  font-size: 15px;
+}
+.ctrl-btn.saber:active, .ctrl-btn.saber.pressed {
+  background: linear-gradient(180deg, #d64545, #962323);
+  color: #fff;
+}
+.hint-bar {
+  font-size: 11px;
+  color: var(--muted);
+  text-align: center;
+  line-height: 1.3;
+}
+@media (max-width: 520px) {
+  .ctrl-btn { min-width: 50px; height: 50px; padding: 0 10px; font-size: 16px; }
+  .ctrl-btn.saber { min-width: 72px; font-size: 13px; }
+  .brand { font-size: 13px; }
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="topbar">
+    <div class="brand">⚔️ Гетьман Сагайдачний</div>
+    <div class="stats">
+      <button class="lvl-btn active" id="btnLvl1" type="button">Рівень 1 · Кам'янець</button>
+      <button class="lvl-btn" id="btnLvl2" type="button">Рівень 2 · Хотин</button>
+      <div class="chip">🔱 <span id="tridentsVal">0/0</span></div>
+      <div class="chip">❤️ <span id="hpVal">5</span></div>
+      <div class="chip">⭐ <span id="scoreVal">0</span></div>
+    </div>
+  </div>
+
+  <div class="stage-wrap">
+    <canvas id="game" width="960" height="540"></canvas>
+    <div class="overlay show" id="overlay">
+      <div class="overlay-card">
+        <h2 id="ovTitle">Похід Гетьмана Сагайдачного</h2>
+        <p id="ovText">Біжи та стрибай по платформах козацької України, збирай золоті Тризуби та бий шаблею ворогів на тлі Кам'янець-Подільської і Хотинської фортець.</p>
+        <button class="action-btn" id="ovBtn" type="button">Почати похід</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="controls">
+    <div class="pad-group">
+      <button class="ctrl-btn" id="btnLeft" type="button" aria-label="Вліво">◀</button>
+      <button class="ctrl-btn" id="btnRight" type="button" aria-label="Вправо">▶</button>
+    </div>
+    <div class="pad-group">
+      <button class="ctrl-btn" id="btnJump" type="button" aria-label="Стрибок">▲ Стрибок</button>
+      <button class="ctrl-btn saber" id="btnSlash" type="button" aria-label="Удар шаблею">⚔️ Шабля</button>
+    </div>
+  </div>
+  <div class="hint-bar">ПК: <b>A / D</b> або <b>◀ / ▶</b> — рух · <b>W / ↑ / Space</b> — стрибок · <b>J / Z / Enter</b> — удар шаблею · <b>R</b> — рестарт</div>
+</div>
+
+<script>
+const canvas = document.getElementById('game');
+const ctx = canvas.getContext('2d');
+
+const tridentsEl = document.getElementById('tridentsVal');
+const hpEl = document.getElementById('hpVal');
+const scoreEl = document.getElementById('scoreVal');
+const overlay = document.getElementById('overlay');
+const ovTitle = document.getElementById('ovTitle');
+const ovText = document.getElementById('ovText');
+const ovBtn = document.getElementById('ovBtn');
+const btnLvl1 = document.getElementById('btnLvl1');
+const btnLvl2 = document.getElementById('btnLvl2');
+
+const W = canvas.width;
+const H = canvas.height;
+const GRAVITY = 1850;
+
+const LEVELS = [
+  {
+    id: 0,
+    name: "Рівень 1 · Кам'янець-Подільська фортеця",
+    theme: 'kamianets',
+    width: 2500,
+    spawn: { x: 90, y: 370 },
+    goal: { x: 2370, y: 255 },
+    platforms: [
+      { x: 0, y: 450, w: 660, h: 90, kind: 'ground' },
+      { x: 740, y: 450, w: 560, h: 90, kind: 'ground' },
+      { x: 1390, y: 450, w: 520, h: 90, kind: 'ground' },
+      { x: 2000, y: 450, w: 500, h: 90, kind: 'ground' },
+
+      { x: 260, y: 365, w: 150, h: 22, kind: 'wood' },
+      { x: 470, y: 295, w: 150, h: 22, kind: 'wood' },
+      { x: 810, y: 350, w: 160, h: 22, kind: 'wood' },
+      { x: 1040, y: 280, w: 160, h: 22, kind: 'wood' },
+      { x: 1470, y: 360, w: 160, h: 22, kind: 'wood' },
+      { x: 1690, y: 290, w: 160, h: 22, kind: 'wood' },
+      { x: 2080, y: 365, w: 150, h: 22, kind: 'wood' },
+      { x: 2280, y: 305, w: 170, h: 24, kind: 'wood' }
+    ],
+    tridents: [
+      { x: 335, y: 320 },
+      { x: 545, y: 250 },
+      { x: 890, y: 305 },
+      { x: 1120, y: 235 },
+      { x: 1550, y: 315 },
+      { x: 1770, y: 245 },
+      { x: 2155, y: 320 },
+      { x: 2350, y: 260 }
+    ],
+    enemies: [
+      { x: 540, y: 450, minX: 430, maxX: 640, speed: 75, hp: 2 },
+      { x: 1060, y: 450, minX: 780, maxX: 1260, speed: 95, hp: 2 },
+      { x: 1640, y: 450, minX: 1430, maxX: 1870, speed: 105, hp: 2 },
+      { x: 2180, y: 450, minX: 2040, maxX: 2330, speed: 115, hp: 3 }
+    ]
+  },
+  {
+    id: 1,
+    name: 'Рівень 2 · Хотинська фортеця',
+    theme: 'khotyn',
+    width: 2750,
+    spawn: { x: 90, y: 370 },
+    goal: { x: 2610, y: 235 },
+    platforms: [
+      { x: 0, y: 450, w: 540, h: 90, kind: 'ground' },
+      { x: 630, y: 450, w: 480, h: 90, kind: 'ground' },
+      { x: 1210, y: 450, w: 540, h: 90, kind: 'ground' },
+      { x: 1850, y: 450, w: 420, h: 90, kind: 'ground' },
+      { x: 2360, y: 450, w: 390, h: 90, kind: 'ground' },
+
+      { x: 220, y: 360, w: 145, h: 22, kind: 'wood' },
+      { x: 410, y: 285, w: 140, h: 22, kind: 'wood' },
+      { x: 700, y: 345, w: 150, h: 22, kind: 'wood' },
+      { x: 910, y: 270, w: 155, h: 22, kind: 'wood' },
+      { x: 1300, y: 350, w: 150, h: 22, kind: 'wood' },
+      { x: 1520, y: 275, w: 155, h: 22, kind: 'wood' },
+      { x: 1930, y: 340, w: 150, h: 22, kind: 'wood' },
+      { x: 2130, y: 265, w: 140, h: 22, kind: 'wood' },
+      { x: 2490, y: 285, w: 180, h: 24, kind: 'wood' }
+    ],
+    tridents: [
+      { x: 292, y: 315 },
+      { x: 480, y: 240 },
+      { x: 775, y: 300 },
+      { x: 987, y: 225 },
+      { x: 1375, y: 305 },
+      { x: 1597, y: 230 },
+      { x: 2005, y: 295 },
+      { x: 2200, y: 220 },
+      { x: 2565, y: 240 }
+    ],
+    enemies: [
+      { x: 420, y: 450, minX: 250, maxX: 520, speed: 95, hp: 2 },
+      { x: 920, y: 450, minX: 670, maxX: 1080, speed: 115, hp: 2 },
+      { x: 1480, y: 450, minX: 1250, maxX: 1710, speed: 125, hp: 3 },
+      { x: 2060, y: 450, minX: 1880, maxX: 2240, speed: 130, hp: 3 },
+      { x: 2470, y: 450, minX: 2390, maxX: 2590, speed: 140, hp: 3 }
+    ]
+  }
+];
+
+let currentLevelIdx = 0;
+let gameState = 'menu'; // 'menu' | 'playing' | 'level_clear' | 'victory' | 'gameover'
+let score = 0;
+let cameraX = 0;
+let timeSec = 0;
+
+const input = {
+  left: false,
+  right: false,
+  jumpQueued: false,
+  slashQueued: false
+};
+
+const player = {
+  x: 90,
+  y: 370,
+  w: 36,
+  h: 58,
+  vx: 0,
+  vy: 0,
+  facing: 1,
+  onGround: false,
+  hp: 5,
+  maxHp: 5,
+  invuln: 0,
+  slashTimer: 0,
+  slashCooldown: 0,
+  slashHitIds: new Set(),
+  walkPhase: 0
+};
+
+let tridents = [];
+let enemies = [];
+let particles = [];
+let slashArcs = [];
+
+function initLevel(idx, keepScore = true) {
+  currentLevelIdx = idx;
+  const lvl = LEVELS[idx];
+  if (!keepScore) score = 0;
+  player.x = lvl.spawn.x;
+  player.y = lvl.spawn.y;
+  player.vx = 0;
+  player.vy = 0;
+  player.facing = 1;
+  player.onGround = false;
+  player.hp = player.maxHp;
+  player.invuln = 0;
+  player.slashTimer = 0;
+  player.slashCooldown = 0;
+  player.slashHitIds.clear();
+  player.walkPhase = 0;
+
+  tridents = lvl.tridents.map((t, i) => ({
+    id: i,
+    x: t.x,
+    y: t.y,
+    r: 16,
+    collected: false,
+    bobOffset: i * 0.75
+  }));
+
+  enemies = lvl.enemies.map((e, i) => ({
+    id: i,
+    x: e.x,
+    y: e.y,
+    w: 38,
+    h: 56,
+    vx: e.speed,
+    speed: e.speed,
+    minX: e.minX,
+    maxX: e.maxX,
+    hp: e.hp,
+    maxHp: e.hp,
+    hitFlash: 0,
+    alive: true,
+    stepPhase: i * 1.1
+  }));
+
+  particles = [];
+  slashArcs = [];
+  cameraX = Math.max(0, Math.min(lvl.width - W, player.x - W * 0.35));
+
+  btnLvl1.classList.toggle('active', idx === 0);
+  btnLvl2.classList.toggle('active', idx === 1);
+  updateHud();
+}
+
+function updateHud() {
+  const collected = tridents.filter(t => t.collected).length;
+  tridentsEl.textContent = `${collected}/${tridents.length}`;
+  hpEl.textContent = `${player.hp}`;
+  scoreEl.textContent = `${score}`;
+}
+
+function showOverlay(title, text, btnText, nextState) {
+  gameState = nextState;
+  ovTitle.textContent = title;
+  ovText.textContent = text;
+  ovBtn.textContent = btnText;
+  overlay.classList.add('show');
+}
+
+function hideOverlay() {
+  overlay.classList.remove('show');
+  gameState = 'playing';
+}
+
+function spawnParticles(x, y, color, count = 10) {
+  for (let i = 0; i < count; i++) {
+    const angle = (Math.PI * 2 * i) / count + (Math.random() - 0.5) * 0.4;
+    const speed = 70 + Math.random() * 170;
+    particles.push({
+      x,
+      y,
+      vx: Math.cos(angle) * speed,
+      vy: Math.sin(angle) * speed - 50,
+      life: 0.45 + Math.random() * 0.25,
+      maxLife: 0.7,
+      size: 3 + Math.random() * 4,
+      color
+    });
+  }
+}
+
+function triggerSlash() {
+  if (gameState !== 'playing') return;
+  if (player.slashCooldown > 0) return;
+  player.slashTimer = 0.22;
+  player.slashCooldown = 0.36;
+  player.slashHitIds.clear();
+  slashArcs.push({
+    x: player.x + player.w / 2 + player.facing * 26,
+    y: player.y + player.h * 0.52,
+    facing: player.facing,
+    life: 0.18,
+    maxLife: 0.18
+  });
+}
+
+function damagePlayer(fromX) {
+  if (player.invuln > 0 || gameState !== 'playing') return;
+  player.hp -= 1;
+  player.invuln = 1.0;
+  player.vy = -420;
+  player.vx = (player.x + player.w / 2 < fromX) ? -260 : 260;
+  spawnParticles(player.x + player.w / 2, player.y + player.h / 2, '#e04848', 12);
+  updateHud();
+  if (player.hp <= 0) {
+    showOverlay(
+      'Гетьман зазнав поразки',
+      'Не біда — поправ шаблю та повтори похід або обери інший рівень.',
+      'Спробувати ще раз',
+      'gameover'
+    );
+  }
+}
+
+function update(dt) {
+  timeSec += dt;
+  if (gameState !== 'playing') return;
+
+  const lvl = LEVELS[currentLevelIdx];
+  const moveDir = (input.right ? 1 : 0) - (input.left ? 1 : 0);
+  const runSpeed = 290;
+
+  if (moveDir !== 0) {
+    player.vx = moveDir * runSpeed;
+    player.facing = moveDir;
+    if (player.onGround) player.walkPhase += dt * 13;
+  } else {
+    player.vx *= Math.pow(0.001, dt);
+    if (Math.abs(player.vx) < 8) player.vx = 0;
+  }
+
+  if (input.jumpQueued) {
+    input.jumpQueued = false;
+    if (player.onGround) {
+      player.vy = -730;
+      player.onGround = false;
+      spawnParticles(player.x + player.w / 2, player.y + player.h, '#e8be5a', 6);
+    }
+  }
+
+  if (input.slashQueued) {
+    input.slashQueued = false;
+    triggerSlash();
+  }
+
+  player.vy += GRAVITY * dt;
+  const prevBottom = player.y + player.h;
+
+  player.x += player.vx * dt;
+  if (player.x < 0) player.x = 0;
+  if (player.x + player.w > lvl.width) player.x = lvl.width - player.w;
+
+  player.y += player.vy * dt;
+  player.onGround = false;
+
+  for (const p of lvl.platforms) {
+    const withinX = player.x + player.w > p.x + 4 && player.x < p.x + p.w - 4;
+    if (withinX && player.vy >= 0 && prevBottom <= p.y + 14 && player.y + player.h >= p.y) {
+      player.y = p.y - player.h;
+      player.vy = 0;
+      player.onGround = true;
+    }
+  }
+
+  if (player.y > H + 90) {
+    player.hp = Math.max(1, player.hp - 1);
+    player.x = lvl.spawn.x;
+    player.y = lvl.spawn.y;
+    player.vx = 0;
+    player.vy = 0;
+    player.invuln = 1.0;
+    spawnParticles(player.x + player.w / 2, player.y + player.h / 2, '#e8be5a', 12);
+    updateHud();
+  }
+
+  if (player.invuln > 0) player.invuln = Math.max(0, player.invuln - dt);
+  if (player.slashTimer > 0) player.slashTimer = Math.max(0, player.slashTimer - dt);
+  if (player.slashCooldown > 0) player.slashCooldown = Math.max(0, player.slashCooldown - dt);
+
+  // Збір тризубів
+  const pxCenter = player.x + player.w / 2;
+  const pyCenter = player.y + player.h / 2;
+  for (const t of tridents) {
+    if (t.collected) continue;
+    const dx = pxCenter - t.x;
+    const dy = pyCenter - t.y;
+    if (dx * dx + dy * dy <= (t.r + 24) * (t.r + 24)) {
+      t.collected = true;
+      score += 100;
+      spawnParticles(t.x, t.y, '#fae08c', 12);
+      updateHud();
+    }
+  }
+
+  // Хітбокс шаблі
+  if (player.slashTimer > 0) {
+    const reach = 64;
+    const hitX = player.facing === 1 ? player.x + player.w - 4 : player.x - reach + 4;
+    const hitY = player.y + 6;
+    const hitW = reach;
+    const hitH = player.h - 8;
+
+    for (const e of enemies) {
+      if (!e.alive || player.slashHitIds.has(e.id)) continue;
+      const eLeft = e.x - e.w / 2;
+      const eTop = e.y - e.h;
+      const overlap =
+        hitX < eLeft + e.w &&
+        hitX + hitW > eLeft &&
+        hitY < eTop + e.h &&
+        hitY + hitH > eTop;
+      if (overlap) {
+        player.slashHitIds.add(e.id);
+        e.hp -= 1;
+        e.hitFlash = 0.16;
+        spawnParticles(e.x, e.y - e.h / 2, '#f5c451', 9);
+        if (e.hp <= 0) {
+          e.alive = false;
+          score += 150;
+          spawnParticles(e.x, e.y - e.h / 2, '#e04848', 16);
+          updateHud();
+        }
+      }
+    }
+  }
+
+  // Рух і зіткнення з ворогами
+  for (const e of enemies) {
+    if (!e.alive) continue;
+    if (e.hitFlash > 0) e.hitFlash = Math.max(0, e.hitFlash - dt);
+    e.x += e.vx * dt;
+    e.stepPhase += dt * 9;
+    if (e.x >= e.maxX) {
+      e.x = e.maxX;
+      e.vx = -Math.abs(e.speed);
+    } else if (e.x <= e.minX) {
+      e.x = e.minX;
+      e.vx = Math.abs(e.speed);
+    }
+
+    const eLeft = e.x - e.w / 2 + 4;
+    const eRight = e.x + e.w / 2 - 4;
+    const eTop = e.y - e.h + 4;
+    const eBottom = e.y;
+
+    const pLeft = player.x + 4;
+    const pRight = player.x + player.w - 4;
+    const pTop = player.y + 4;
+    const pBottom = player.y + player.h;
+
+    if (pRight > eLeft && pLeft < eRight && pBottom > eTop && pTop < eBottom) {
+      damagePlayer(e.x);
+    }
+  }
+
+  // Перевірка фінішного козацького прапора/брами
+  const gdx = pxCenter - lvl.goal.x;
+  const gdy = pyCenter - (lvl.goal.y - 35);
+  if (gdx * gdx + gdy * gdy <= 56 * 56) {
+    score += 200;
+    updateHud();
+    if (currentLevelIdx < LEVELS.length - 1) {
+      showOverlay(
+        'Фортецю пройдено!',
+        `Ви здолали шлях «${lvl.name}». Попереду — Хотинська фортеця над Дністром!`,
+        'Перейти до Рівня 2 · Хотин',
+        'level_clear'
+      );
+    } else {
+      showOverlay(
+        'Слава Гетьману Сагайдачному!',
+        `Обидва рівні пройдено! Підсумковий рахунок: ${score} балів.`,
+        'Грати знову (Рівень 1)',
+        'victory'
+      );
+    }
+  }
+
+  // Оновлення частинок та дуг шаблі
+  for (let i = particles.length - 1; i >= 0; i--) {
+    const pt = particles[i];
+    pt.life -= dt;
+    if (pt.life <= 0) {
+      particles.splice(i, 1);
+      continue;
+    }
+    pt.vy += 520 * dt;
+    pt.x += pt.vx * dt;
+    pt.y += pt.vy * dt;
+  }
+
+  for (let i = slashArcs.length - 1; i >= 0; i--) {
+    slashArcs[i].life -= dt;
+    if (slashArcs[i].life <= 0) slashArcs.splice(i, 1);
+  }
+
+  // Плавна камера
+  const targetCamX = Math.max(0, Math.min(lvl.width - W, player.x + player.w / 2 - W * 0.36));
+  cameraX += (targetCamX - cameraX) * Math.min(1, dt * 8);
+}
+
+function drawFortressBackground(theme, camX) {
+  const skyGrad = ctx.createLinearGradient(0, 0, 0, H);
+  if (theme === 'kamianets') {
+    skyGrad.addColorStop(0, '#18322c');
+    skyGrad.addColorStop(0.58, '#2d5345');
+    skyGrad.addColorStop(1, '#1b2c23');
+  } else {
+    skyGrad.addColorStop(0, '#1e2438');
+    skyGrad.addColorStop(0.58, '#3d475e');
+    skyGrad.addColorStop(1, '#1c2623');
+  }
+  ctx.fillStyle = skyGrad;
+  ctx.fillRect(0, 0, W, H);
+
+  // Сонце в козацькому стилі
+  const sunX = W * 0.78 - camX * 0.05;
+  const sunY = 105;
+  ctx.save();
+  ctx.fillStyle = 'rgba(248, 206, 92, 0.16)';
+  ctx.beginPath();
+  ctx.arc(sunX, sunY, 64, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = 'rgba(248, 206, 92, 0.35)';
+  ctx.beginPath();
+  ctx.arc(sunX, sunY, 42, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
+
+  // Далекі пагорби
+  ctx.fillStyle = theme === 'kamianets' ? '#172b24' : '#1b2730';
+  ctx.beginPath();
+  ctx.moveTo(0, H);
+  for (let x = 0; x <= W + 60; x += 60) {
+    const worldX = x + camX * 0.18;
+    const hillY = 300 + Math.sin(worldX * 0.004) * 34 + Math.cos(worldX * 0.009) * 18;
+    ctx.lineTo(x, hillY);
+  }
+  ctx.lineTo(W, H);
+  ctx.closePath();
+  ctx.fill();
+
+  // Архітектурний силует фортеці (Кам'янець-Подільська або Хотинська)
+  ctx.save();
+  const fortOffset = -camX * 0.35;
+  for (let i = 0; i < 4; i++) {
+    const baseX = i * 720 + 140 + fortOffset;
+    if (baseX < -420 || baseX > W + 420) continue;
+
+    ctx.fillStyle = theme === 'kamianets' ? '#273831' : '#2b3342';
+    ctx.strokeStyle = 'rgba(232, 190, 90, 0.24)';
+    ctx.lineWidth = 1.5;
+
+    // Фортечна стіна з зубцями
+    ctx.fillRect(baseX, 245, 290, 125);
+    ctx.strokeRect(baseX, 245, 290, 125);
+    for (let bx = baseX + 8; bx < baseX + 280; bx += 26) {
+      ctx.fillRect(bx, 233, 14, 12);
+    }
+
+    // Вежі фортеці
+    const towers = theme === 'kamianets'
+      ? [
+          { dx: 15, top: 165, w: 54, h: 205, roof: '#7a2828' },
+          { dx: 118, top: 145, w: 62, h: 225, roof: '#8f3028' },
+          { dx: 225, top: 175, w: 52, h: 195, roof: '#7a2828' }
+        ]
+      : [
+          { dx: 10, top: 150, w: 58, h: 220, roof: '#6e2525' },
+          { dx: 115, top: 125, w: 68, h: 245, roof: '#852b25' },
+          { dx: 228, top: 155, w: 56, h: 215, roof: '#6e2525' }
+        ];
+
+    for (const tw of towers) {
+      ctx.fillStyle = theme === 'kamianets' ? '#2e4138' : '#323c4e';
+      ctx.fillRect(baseX + tw.dx, tw.top, tw.w, tw.h);
+      ctx.strokeRect(baseX + tw.dx, tw.top, tw.w, tw.h);
+
+      // Шатровий дах вежі
+      ctx.fillStyle = tw.roof;
+      ctx.beginPath();
+      ctx.moveTo(baseX + tw.dx - 6, tw.top);
+      ctx.lineTo(baseX + tw.dx + tw.w / 2, tw.top - 34);
+      ctx.lineTo(baseX + tw.dx + tw.w + 6, tw.top);
+      ctx.closePath();
+      ctx.fill();
+    }
+
+    // Підпис фортеці на задньому плані
+    ctx.fillStyle = 'rgba(250, 224, 140, 0.55)';
+    ctx.font = '700 13px system-ui, sans-serif';
+    const label = theme === 'kamianets' ? "КАМ'ЯНЕЦЬ-ПОДІЛЬСЬКА ФОРТЕЦЯ" : 'ХОТИНСЬКА ФОРТЕЦЯ';
+    ctx.fillText(label, baseX + 35, 215);
+  }
+  ctx.restore();
+}
+
+function drawTrident(x, y, time) {
+  const bobY = y + Math.sin(time * 4 + x * 0.01) * 5;
+  ctx.save();
+  ctx.translate(x, bobY);
+  ctx.strokeStyle = '#fae08c';
+  ctx.fillStyle = '#e8be5a';
+  ctx.lineWidth = 3;
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+
+  // Сяйво
+  ctx.fillStyle = 'rgba(232, 190, 90, 0.22)';
+  ctx.beginPath();
+  ctx.arc(0, 0, 18, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Центральний зубець
+  ctx.strokeStyle = '#fae08c';
+  ctx.beginPath();
+  ctx.moveTo(0, 12);
+  ctx.lineTo(0, -14);
+  ctx.moveTo(0, -15);
+  ctx.lineTo(-4, -9);
+  ctx.moveTo(0, -15);
+  ctx.lineTo(4, -9);
+  ctx.stroke();
+
+  // Основа і бічні зубці
+  ctx.beginPath();
+  ctx.moveTo(-10, -5);
+  ctx.quadraticCurveTo(-10, 8, 0, 8);
+  ctx.quadraticCurveTo(10, 8, 10, -5);
+  ctx.moveTo(-10, -5);
+  ctx.lineTo(-12, -10);
+  ctx.moveTo(10, -5);
+  ctx.lineTo(12, -10);
+  ctx.stroke();
+  ctx.restore();
+}
+
+function drawCossackHetman(p, camX, time) {
+  if (p.invuln > 0 && Math.floor(time * 18) % 2 === 0) return;
+  const sx = p.x - camX;
+  const sy = p.y;
+  const step = Math.sin(p.walkPhase) * (Math.abs(p.vx) > 10 && p.onGround ? 6 : 0);
+
+  ctx.save();
+  ctx.translate(sx + p.w / 2, sy + p.h / 2);
+  ctx.scale(p.facing, 1);
+
+  // Шаровари / ноги
+  ctx.strokeStyle = '#b83838';
+  ctx.lineWidth = 7;
+  ctx.lineCap = 'round';
+  ctx.beginPath();
+  ctx.moveTo(-5, 6);
+  ctx.lineTo(-7 + step, 27);
+  ctx.moveTo(5, 6);
+  ctx.lineTo(7 - step, 27);
+  ctx.stroke();
+
+  // Кунтуш / жупан
+  ctx.fillStyle = '#1f5c46';
+  ctx.strokeStyle = '#e8be5a';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.roundRect(-14, -12, 28, 22, 6);
+  ctx.fill();
+  ctx.stroke();
+
+  // Пояс із золотом
+  ctx.fillStyle = '#e8be5a';
+  ctx.fillRect(-13, 3, 26, 4);
+
+  // Голова та оселедець
+  ctx.fillStyle = '#e7be96';
+  ctx.beginPath();
+  ctx.arc(0, -19, 10, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Вуса
+  ctx.strokeStyle = '#4a321f';
+  ctx.lineWidth = 2.2;
+  ctx.beginPath();
+  ctx.moveTo(-1, -15);
+  ctx.quadraticCurveTo(5, -13, 9, -15);
+  ctx.moveTo(1, -15);
+  ctx.quadraticCurveTo(-4, -13, -7, -14);
+  ctx.stroke();
+
+  // Оселедець назад
+  ctx.strokeStyle = '#3b2617';
+  ctx.lineWidth = 2.5;
+  ctx.beginPath();
+  ctx.moveTo(-8, -24);
+  ctx.quadraticCurveTo(-18, -28, -21, -21);
+  ctx.stroke();
+
+  // Шапка з червоним верхом
+  ctx.fillStyle = '#9e2828';
+  ctx.beginPath();
+  ctx.arc(-1, -24, 9.5, Math.PI, 0);
+  ctx.fill();
+  ctx.fillStyle = '#26332d';
+  ctx.fillRect(-11, -25, 22, 5);
+
+  // Шабля в руці
+  const slashAngle = p.slashTimer > 0 ? 0.95 : -0.35;
+  ctx.save();
+  ctx.translate(10, -2);
+  ctx.rotate(slashAngle);
+  ctx.strokeStyle = '#d9e4ec';
+  ctx.lineWidth = 3.5;
+  ctx.beginPath();
+  ctx.moveTo(0, 0);
+  ctx.quadraticCurveTo(18, -6, 30, -16);
+  ctx.stroke();
+  ctx.strokeStyle = '#e8be5a';
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.moveTo(-3, 2);
+  ctx.lineTo(4, -2);
+  ctx.stroke();
+  ctx.restore();
+
+  ctx.restore();
+}
+
+function drawEnemy(e, camX) {
+  if (!e.alive) return;
+  const sx = e.x - camX;
+  const sy = e.y;
+  const dir = e.vx >= 0 ? 1 : -1;
+  const bob = Math.sin(e.stepPhase) * 2.5;
+
+  ctx.save();
+  ctx.translate(sx, sy - e.h / 2 + bob);
+  ctx.scale(dir, 1);
+
+  // Тулуб ворога
+  ctx.fillStyle = e.hitFlash > 0 ? '#ffffff' : '#6c2a2a';
+  ctx.strokeStyle = '#d6b36a';
+  ctx.lineWidth = 1.8;
+  ctx.beginPath();
+  ctx.roundRect(-13, -8, 26, 22, 5);
+  ctx.fill();
+  ctx.stroke();
+
+  // Ноги
+  ctx.strokeStyle = '#2d353b';
+  ctx.lineWidth = 5;
+  ctx.beginPath();
+  ctx.moveTo(-6, 14);
+  ctx.lineTo(-7, e.h / 2);
+  ctx.moveTo(6, 14);
+  ctx.lineTo(7, e.h / 2);
+  ctx.stroke();
+
+  // Голова та шолом
+  ctx.fillStyle = e.hitFlash > 0 ? '#ffffff' : '#dfb690';
+  ctx.beginPath();
+  ctx.arc(0, -15, 9, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.fillStyle = e.hitFlash > 0 ? '#ffffff' : '#4a5568';
+  ctx.beginPath();
+  ctx.arc(0, -18, 9.5, Math.PI, 0);
+  ctx.fill();
+
+  // Спис/зброя ворога
+  ctx.strokeStyle = '#c9a258';
+  ctx.lineWidth = 2.5;
+  ctx.beginPath();
+  ctx.moveTo(10, -2);
+  ctx.lineTo(24, -10);
+  ctx.stroke();
+
+  // Смужка здоров'я ворога
+  if (e.hp < e.maxHp) {
+    ctx.fillStyle = 'rgba(0,0,0,0.65)';
+    ctx.fillRect(-16, -34, 32, 5);
+    ctx.fillStyle = '#e04848';
+    ctx.fillRect(-16, -34, 32 * (e.hp / e.maxHp), 5);
+  }
+
+  ctx.restore();
+}
+
+function drawGoal(goal, camX, time) {
+  const gx = goal.x - camX;
+  const gy = goal.y;
+  const wave = Math.sin(time * 6) * 5;
+
+  ctx.save();
+  // Древко стяга
+  ctx.strokeStyle = '#e8be5a';
+  ctx.lineWidth = 4;
+  ctx.beginPath();
+  ctx.moveTo(gx, gy + 30);
+  ctx.lineTo(gx, gy - 58);
+  ctx.stroke();
+
+  // Синьо-жовтий стяг
+  ctx.fillStyle = '#2563eb';
+  ctx.fillRect(gx + 2, gy - 56, 42, 16);
+  ctx.fillStyle = '#facc15';
+  ctx.fillRect(gx + 2, gy - 40 + wave * 0.25, 42, 16);
+
+  ctx.fillStyle = '#fae08c';
+  ctx.font = '700 12px system-ui, sans-serif';
+  ctx.fillText('ФІНІШ', gx - 14, gy - 66);
+  ctx.restore();
+}
+
+function render() {
+  const lvl = LEVELS[currentLevelIdx];
+  drawFortressBackground(lvl.theme, cameraX);
+
+  // Платформи та земля
+  for (const p of lvl.platforms) {
+    const px = p.x - cameraX;
+    if (px + p.w < -20 || px > W + 20) continue;
+
+    if (p.kind === 'ground') {
+      ctx.fillStyle = '#23382e';
+      ctx.fillRect(px, p.y, p.w, p.h);
+      ctx.fillStyle = '#3b6e4c';
+      ctx.fillRect(px, p.y, p.w, 12);
+      ctx.strokeStyle = 'rgba(232, 190, 90, 0.35)';
+      ctx.lineWidth = 1.5;
+      ctx.strokeRect(px, p.y, p.w, p.h);
+    } else {
+      ctx.fillStyle = '#6b4423';
+      ctx.strokeStyle = '#e8be5a';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.roundRect(px, p.y, p.w, p.h, 6);
+      ctx.fill();
+      ctx.stroke();
+    }
+  }
+
+  // Тризуби
+  for (const t of tridents) {
+    if (t.collected) continue;
+    const tx = t.x - cameraX;
+    if (tx < -40 || tx > W + 40) continue;
+    drawTrident(tx, t.y, timeSec);
+  }
+
+  drawGoal(lvl.goal, cameraX, timeSec);
+
+  // Вороги
+  for (const e of enemies) {
+    const ex = e.x - cameraX;
+    if (ex < -70 || ex > W + 70) continue;
+    drawEnemy(e, cameraX);
+  }
+
+  // Гетьман Сагайдачний
+  drawCossackHetman(player, cameraX, timeSec);
+
+  // Дуги удару шаблею
+  for (const arc of slashArcs) {
+    const ax = arc.x - cameraX;
+    const alpha = arc.life / arc.maxLife;
+    ctx.save();
+    ctx.translate(ax, arc.y);
+    ctx.scale(arc.facing, 1);
+    ctx.strokeStyle = `rgba(250, 224, 140, ${alpha})`;
+    ctx.lineWidth = 6;
+    ctx.beginPath();
+    ctx.arc(-8, 0, 32, -0.9, 0.9);
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  // Частинки
+  for (const pt of particles) {
+    ctx.save();
+    ctx.globalAlpha = Math.max(0, pt.life / pt.maxLife);
+    ctx.fillStyle = pt.color;
+    ctx.beginPath();
+    ctx.arc(pt.x - cameraX, pt.y, pt.size, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  }
+}
+
+let lastTime = performance.now();
+function loop(now) {
+  const dt = Math.min(0.05, (now - lastTime) / 1000);
+  lastTime = now;
+  update(dt);
+  render();
+  requestAnimationFrame(loop);
+}
+
+// Керування з клавіатури
+window.addEventListener('keydown', (e) => {
+  if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'Space'].includes(e.code)) {
+    e.preventDefault();
+  }
+  if (e.code === 'ArrowLeft' || e.code === 'KeyA') input.left = true;
+  if (e.code === 'ArrowRight' || e.code === 'KeyD') input.right = true;
+  if (e.code === 'ArrowUp' || e.code === 'KeyW' || e.code === 'Space') {
+    if (!e.repeat) input.jumpQueued = true;
+  }
+  if (e.code === 'KeyJ' || e.code === 'KeyZ' || e.code === 'Enter') {
+    if (!e.repeat) {
+      if (overlay.classList.contains('show')) {
+        ovBtn.click();
+      } else {
+        input.slashQueued = true;
+      }
+    }
+  }
+  if (e.code === 'KeyR' && !e.repeat) {
+    initLevel(currentLevelIdx, true);
+    hideOverlay();
+  }
+});
+
+window.addEventListener('keyup', (e) => {
+  if (e.code === 'ArrowLeft' || e.code === 'KeyA') input.left = false;
+  if (e.code === 'ArrowRight' || e.code === 'KeyD') input.right = false;
+});
+
+// Сенсорні та мишачі кнопки
+function bindHoldButton(btn, onDown, onUp) {
+  const down = (e) => {
+    e.preventDefault();
+    btn.classList.add('pressed');
+    onDown();
+  };
+  const up = (e) => {
+    e.preventDefault();
+    btn.classList.remove('pressed');
+    if (onUp) onUp();
+  };
+  btn.addEventListener('pointerdown', down);
+  btn.addEventListener('pointerup', up);
+  btn.addEventListener('pointerleave', up);
+  btn.addEventListener('pointercancel', up);
+}
+
+bindHoldButton(document.getElementById('btnLeft'), () => { input.left = true; }, () => { input.left = false; });
+bindHoldButton(document.getElementById('btnRight'), () => { input.right = true; }, () => { input.right = false; });
+bindHoldButton(document.getElementById('btnJump'), () => { input.jumpQueued = true; });
+bindHoldButton(document.getElementById('btnSlash'), () => { input.slashQueued = true; });
+
+ovBtn.addEventListener('click', () => {
+  if (gameState === 'menu') {
+    initLevel(0, false);
+    hideOverlay();
+  } else if (gameState === 'level_clear') {
+    initLevel(currentLevelIdx + 1, true);
+    hideOverlay();
+  } else if (gameState === 'victory') {
+    initLevel(0, false);
+    hideOverlay();
+  } else if (gameState === 'gameover') {
+    initLevel(currentLevelIdx, true);
+    hideOverlay();
+  }
+});
+
+btnLvl1.addEventListener('click', () => {
+  initLevel(0, false);
+  hideOverlay();
+});
+
+btnLvl2.addEventListener('click', () => {
+  initLevel(1, true);
+  hideOverlay();
+});
+
+initLevel(0, false);
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>
