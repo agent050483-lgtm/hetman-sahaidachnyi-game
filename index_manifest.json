@@ -1,0 +1,17 @@
+{
+  "package_name": "index_package",
+  "generated_at": "2026-11-21 15:48:17",
+  "version": "1.0.0",
+  "entries": [
+    {
+      "id": "IDX-001",
+      "title": "Загальний огляд індексу",
+      "status": "ready"
+    },
+    {
+      "id": "IDX-002",
+      "title": "Структура метаданих та каталогу",
+      "status": "ready"
+    }
+  ]
+}
