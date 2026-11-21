@@ -264,6 +264,26 @@ const W = canvas.width;
 const H = canvas.height;
 const GRAVITY = 1850;
 
+// Підключення власних PNG-спрайтів з резервним рендером
+const sprites = {
+  player: new Image(),
+  platform: new Image(),
+  enemy: new Image(),
+  loaded: {
+    player: false,
+    platform: false,
+    enemy: false
+  }
+};
+
+sprites.player.onload = () => { sprites.loaded.player = true; };
+sprites.platform.onload = () => { sprites.loaded.platform = true; };
+sprites.enemy.onload = () => { sprites.loaded.enemy = true; };
+
+sprites.player.src = './sahaidachnyi.png';
+sprites.platform.src = './platform.png';
+sprites.enemy.src = './enemy.png';
+
 const LEVELS = [
   {
     id: 0,
@@ -350,7 +370,7 @@ const LEVELS = [
 ];
 
 let currentLevelIdx = 0;
-let gameState = 'menu'; // 'menu' | 'playing' | 'level_clear' | 'victory' | 'gameover'
+let gameState = 'menu';
 let score = 0;
 let cameraX = 0;
 let timeSec = 0;
@@ -572,7 +592,6 @@ function update(dt) {
   if (player.slashTimer > 0) player.slashTimer = Math.max(0, player.slashTimer - dt);
   if (player.slashCooldown > 0) player.slashCooldown = Math.max(0, player.slashCooldown - dt);
 
-  // Збір тризубів
   const pxCenter = player.x + player.w / 2;
   const pyCenter = player.y + player.h / 2;
   for (const t of tridents) {
@@ -587,7 +606,6 @@ function update(dt) {
     }
   }
 
-  // Хітбокс шаблі
   if (player.slashTimer > 0) {
     const reach = 64;
     const hitX = player.facing === 1 ? player.x + player.w - 4 : player.x - reach + 4;
@@ -619,7 +637,6 @@ function update(dt) {
     }
   }
 
-  // Рух і зіткнення з ворогами
   for (const e of enemies) {
     if (!e.alive) continue;
     if (e.hitFlash > 0) e.hitFlash = Math.max(0, e.hitFlash - dt);
@@ -648,7 +665,6 @@ function update(dt) {
     }
   }
 
-  // Перевірка фінішного козацького прапора/брами
   const gdx = pxCenter - lvl.goal.x;
   const gdy = pyCenter - (lvl.goal.y - 35);
   if (gdx * gdx + gdy * gdy <= 56 * 56) {
@@ -671,7 +687,6 @@ function update(dt) {
     }
   }
 
-  // Оновлення частинок та дуг шаблі
   for (let i = particles.length - 1; i >= 0; i--) {
     const pt = particles[i];
     pt.life -= dt;
@@ -689,7 +704,6 @@ function update(dt) {
     if (slashArcs[i].life <= 0) slashArcs.splice(i, 1);
   }
 
-  // Плавна камера
   const targetCamX = Math.max(0, Math.min(lvl.width - W, player.x + player.w / 2 - W * 0.36));
   cameraX += (targetCamX - cameraX) * Math.min(1, dt * 8);
 }
@@ -708,7 +722,6 @@ function drawFortressBackground(theme, camX) {
   ctx.fillStyle = skyGrad;
   ctx.fillRect(0, 0, W, H);
 
-  // Сонце в козацькому стилі
   const sunX = W * 0.78 - camX * 0.05;
   const sunY = 105;
   ctx.save();
@@ -722,7 +735,6 @@ function drawFortressBackground(theme, camX) {
   ctx.fill();
   ctx.restore();
 
-  // Далекі пагорби
   ctx.fillStyle = theme === 'kamianets' ? '#172b24' : '#1b2730';
   ctx.beginPath();
   ctx.moveTo(0, H);
@@ -735,7 +747,6 @@ function drawFortressBackground(theme, camX) {
   ctx.closePath();
   ctx.fill();
 
-  // Архітектурний силует фортеці (Кам'янець-Подільська або Хотинська)
   ctx.save();
   const fortOffset = -camX * 0.35;
   for (let i = 0; i < 4; i++) {
@@ -746,14 +757,12 @@ function drawFortressBackground(theme, camX) {
     ctx.strokeStyle = 'rgba(232, 190, 90, 0.24)';
     ctx.lineWidth = 1.5;
 
-    // Фортечна стіна з зубцями
     ctx.fillRect(baseX, 245, 290, 125);
     ctx.strokeRect(baseX, 245, 290, 125);
     for (let bx = baseX + 8; bx < baseX + 280; bx += 26) {
       ctx.fillRect(bx, 233, 14, 12);
     }
 
-    // Вежі фортеці
     const towers = theme === 'kamianets'
       ? [
           { dx: 15, top: 165, w: 54, h: 205, roof: '#7a2828' },
@@ -771,7 +780,6 @@ function drawFortressBackground(theme, camX) {
       ctx.fillRect(baseX + tw.dx, tw.top, tw.w, tw.h);
       ctx.strokeRect(baseX + tw.dx, tw.top, tw.w, tw.h);
 
-      // Шатровий дах вежі
       ctx.fillStyle = tw.roof;
       ctx.beginPath();
       ctx.moveTo(baseX + tw.dx - 6, tw.top);
@@ -781,7 +789,6 @@ function drawFortressBackground(theme, camX) {
       ctx.fill();
     }
 
-    // Підпис фортеці на задньому плані
     ctx.fillStyle = 'rgba(250, 224, 140, 0.55)';
     ctx.font = '700 13px system-ui, sans-serif';
     const label = theme === 'kamianets' ? "КАМ'ЯНЕЦЬ-ПОДІЛЬСЬКА ФОРТЕЦЯ" : 'ХОТИНСЬКА ФОРТЕЦЯ';
@@ -800,13 +807,11 @@ function drawTrident(x, y, time) {
   ctx.lineCap = 'round';
   ctx.lineJoin = 'round';
 
-  // Сяйво
   ctx.fillStyle = 'rgba(232, 190, 90, 0.22)';
   ctx.beginPath();
   ctx.arc(0, 0, 18, 0, Math.PI * 2);
   ctx.fill();
 
-  // Центральний зубець
   ctx.strokeStyle = '#fae08c';
   ctx.beginPath();
   ctx.moveTo(0, 12);
@@ -817,7 +822,6 @@ function drawTrident(x, y, time) {
   ctx.lineTo(4, -9);
   ctx.stroke();
 
-  // Основа і бічні зубці
   ctx.beginPath();
   ctx.moveTo(-10, -5);
   ctx.quadraticCurveTo(-10, 8, 0, 8);
@@ -836,11 +840,34 @@ function drawCossackHetman(p, camX, time) {
   const sy = p.y;
   const step = Math.sin(p.walkPhase) * (Math.abs(p.vx) > 10 && p.onGround ? 6 : 0);
 
+  if (sprites.loaded.player) {
+    const bob = (Math.abs(p.vx) > 10 && p.onGround) ? Math.sin(p.walkPhase) * 3 : 0;
+    ctx.save();
+    ctx.translate(sx + p.w / 2, sy + p.h / 2);
+    ctx.scale(p.facing, 1);
+    ctx.drawImage(sprites.player, -34, -36 + bob, 68, 72);
+
+    // Акцентна шабля при ударі поверх спрайта
+    if (p.slashTimer > 0) {
+      ctx.save();
+      ctx.translate(12, -2);
+      ctx.rotate(0.85);
+      ctx.strokeStyle = '#fae08c';
+      ctx.lineWidth = 4;
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.quadraticCurveTo(18, -6, 32, -18);
+      ctx.stroke();
+      ctx.restore();
+    }
+    ctx.restore();
+    return;
+  }
+
   ctx.save();
   ctx.translate(sx + p.w / 2, sy + p.h / 2);
   ctx.scale(p.facing, 1);
 
-  // Шаровари / ноги
   ctx.strokeStyle = '#b83838';
   ctx.lineWidth = 7;
   ctx.lineCap = 'round';
@@ -851,7 +878,6 @@ function drawCossackHetman(p, camX, time) {
   ctx.lineTo(7 - step, 27);
   ctx.stroke();
 
-  // Кунтуш / жупан
   ctx.fillStyle = '#1f5c46';
   ctx.strokeStyle = '#e8be5a';
   ctx.lineWidth = 2;
@@ -860,17 +886,14 @@ function drawCossackHetman(p, camX, time) {
   ctx.fill();
   ctx.stroke();
 
-  // Пояс із золотом
   ctx.fillStyle = '#e8be5a';
   ctx.fillRect(-13, 3, 26, 4);
 
-  // Голова та оселедець
   ctx.fillStyle = '#e7be96';
   ctx.beginPath();
   ctx.arc(0, -19, 10, 0, Math.PI * 2);
   ctx.fill();
 
-  // Вуса
   ctx.strokeStyle = '#4a321f';
   ctx.lineWidth = 2.2;
   ctx.beginPath();
@@ -880,7 +903,6 @@ function drawCossackHetman(p, camX, time) {
   ctx.quadraticCurveTo(-4, -13, -7, -14);
   ctx.stroke();
 
-  // Оселедець назад
   ctx.strokeStyle = '#3b2617';
   ctx.lineWidth = 2.5;
   ctx.beginPath();
@@ -888,7 +910,6 @@ function drawCossackHetman(p, camX, time) {
   ctx.quadraticCurveTo(-18, -28, -21, -21);
   ctx.stroke();
 
-  // Шапка з червоним верхом
   ctx.fillStyle = '#9e2828';
   ctx.beginPath();
   ctx.arc(-1, -24, 9.5, Math.PI, 0);
@@ -896,7 +917,6 @@ function drawCossackHetman(p, camX, time) {
   ctx.fillStyle = '#26332d';
   ctx.fillRect(-11, -25, 22, 5);
 
-  // Шабля в руці
   const slashAngle = p.slashTimer > 0 ? 0.95 : -0.35;
   ctx.save();
   ctx.translate(10, -2);
@@ -925,11 +945,29 @@ function drawEnemy(e, camX) {
   const dir = e.vx >= 0 ? 1 : -1;
   const bob = Math.sin(e.stepPhase) * 2.5;
 
+  if (sprites.loaded.enemy) {
+    ctx.save();
+    ctx.translate(sx, sy - e.h / 2 + bob);
+    ctx.scale(dir, 1);
+    ctx.drawImage(sprites.enemy, -32, -34, 64, 68);
+    if (e.hitFlash > 0) {
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.55)';
+      ctx.fillRect(-26, -30, 52, 60);
+    }
+    if (e.hp < e.maxHp) {
+      ctx.fillStyle = 'rgba(0,0,0,0.65)';
+      ctx.fillRect(-16, -38, 32, 5);
+      ctx.fillStyle = '#e04848';
+      ctx.fillRect(-16, -38, 32 * (e.hp / e.maxHp), 5);
+    }
+    ctx.restore();
+    return;
+  }
+
   ctx.save();
   ctx.translate(sx, sy - e.h / 2 + bob);
   ctx.scale(dir, 1);
 
-  // Тулуб ворога
   ctx.fillStyle = e.hitFlash > 0 ? '#ffffff' : '#6c2a2a';
   ctx.strokeStyle = '#d6b36a';
   ctx.lineWidth = 1.8;
@@ -938,7 +976,6 @@ function drawEnemy(e, camX) {
   ctx.fill();
   ctx.stroke();
 
-  // Ноги
   ctx.strokeStyle = '#2d353b';
   ctx.lineWidth = 5;
   ctx.beginPath();
@@ -948,7 +985,6 @@ function drawEnemy(e, camX) {
   ctx.lineTo(7, e.h / 2);
   ctx.stroke();
 
-  // Голова та шолом
   ctx.fillStyle = e.hitFlash > 0 ? '#ffffff' : '#dfb690';
   ctx.beginPath();
   ctx.arc(0, -15, 9, 0, Math.PI * 2);
@@ -959,7 +995,6 @@ function drawEnemy(e, camX) {
   ctx.arc(0, -18, 9.5, Math.PI, 0);
   ctx.fill();
 
-  // Спис/зброя ворога
   ctx.strokeStyle = '#c9a258';
   ctx.lineWidth = 2.5;
   ctx.beginPath();
@@ -967,7 +1002,6 @@ function drawEnemy(e, camX) {
   ctx.lineTo(24, -10);
   ctx.stroke();
 
-  // Смужка здоров'я ворога
   if (e.hp < e.maxHp) {
     ctx.fillStyle = 'rgba(0,0,0,0.65)';
     ctx.fillRect(-16, -34, 32, 5);
@@ -984,7 +1018,6 @@ function drawGoal(goal, camX, time) {
   const wave = Math.sin(time * 6) * 5;
 
   ctx.save();
-  // Древко стяга
   ctx.strokeStyle = '#e8be5a';
   ctx.lineWidth = 4;
   ctx.beginPath();
@@ -992,7 +1025,6 @@ function drawGoal(goal, camX, time) {
   ctx.lineTo(gx, gy - 58);
   ctx.stroke();
 
-  // Синьо-жовтий стяг
   ctx.fillStyle = '#2563eb';
   ctx.fillRect(gx + 2, gy - 56, 42, 16);
   ctx.fillStyle = '#facc15';
@@ -1008,7 +1040,6 @@ function render() {
   const lvl = LEVELS[currentLevelIdx];
   drawFortressBackground(lvl.theme, cameraX);
 
-  // Платформи та земля
   for (const p of lvl.platforms) {
     const px = p.x - cameraX;
     if (px + p.w < -20 || px > W + 20) continue;
@@ -1021,6 +1052,21 @@ function render() {
       ctx.strokeStyle = 'rgba(232, 190, 90, 0.35)';
       ctx.lineWidth = 1.5;
       ctx.strokeRect(px, p.y, p.w, p.h);
+    } else if (sprites.loaded.platform) {
+      ctx.save();
+      ctx.beginPath();
+      ctx.roundRect(px, p.y, p.w, p.h, 6);
+      ctx.clip();
+      const tileW = 64;
+      for (let tx = px; tx < px + p.w; tx += tileW) {
+        ctx.drawImage(sprites.platform, tx, p.y - 2, Math.min(tileW + 1, px + p.w - tx), p.h + 4);
+      }
+      ctx.restore();
+      ctx.strokeStyle = '#e8be5a';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.roundRect(px, p.y, p.w, p.h, 6);
+      ctx.stroke();
     } else {
       ctx.fillStyle = '#6b4423';
       ctx.strokeStyle = '#e8be5a';
@@ -1032,7 +1078,6 @@ function render() {
     }
   }
 
-  // Тризуби
   for (const t of tridents) {
     if (t.collected) continue;
     const tx = t.x - cameraX;
@@ -1042,17 +1087,14 @@ function render() {
 
   drawGoal(lvl.goal, cameraX, timeSec);
 
-  // Вороги
   for (const e of enemies) {
     const ex = e.x - cameraX;
     if (ex < -70 || ex > W + 70) continue;
     drawEnemy(e, cameraX);
   }
 
-  // Гетьман Сагайдачний
   drawCossackHetman(player, cameraX, timeSec);
 
-  // Дуги удару шаблею
   for (const arc of slashArcs) {
     const ax = arc.x - cameraX;
     const alpha = arc.life / arc.maxLife;
@@ -1067,7 +1109,6 @@ function render() {
     ctx.restore();
   }
 
-  // Частинки
   for (const pt of particles) {
     ctx.save();
     ctx.globalAlpha = Math.max(0, pt.life / pt.maxLife);
@@ -1088,7 +1129,6 @@ function loop(now) {
   requestAnimationFrame(loop);
 }
 
-// Керування з клавіатури
 window.addEventListener('keydown', (e) => {
   if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'Space'].includes(e.code)) {
     e.preventDefault();
@@ -1118,7 +1158,6 @@ window.addEventListener('keyup', (e) => {
   if (e.code === 'ArrowRight' || e.code === 'KeyD') input.right = false;
 });
 
-// Сенсорні та мишачі кнопки
 function bindHoldButton(btn, onDown, onUp) {
   const down = (e) => {
     e.preventDefault();
